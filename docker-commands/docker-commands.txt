@@ -1,0 +1,22 @@
+--RUN
+docker run --publish RUNNING_PORT:WANTED_PORT --detach --name CONTAINER_NAME PROJECT/ID
+
+--BUILD
+ docker build --tag PROJECT:VERSION .
+
+--INFO
+docker image ls
+docker container ls
+docker ps
+docker logs CONTAINER_NAME --until/--tail/--folow
+
+--DELETE
+-CONTAINER
+docker rm --force CONTAINER_NAME
+-image
+docker rmi --force PROJECT
+
+--STOP
+docker stop CONTAINER_NAME
+
+

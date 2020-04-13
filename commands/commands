@@ -1,0 +1,111 @@
+--MICROK8S
+-INSTALL
+sudo snap install microk8s --classic --channel=1.18/stable
+-SETUP
+sudo usermod -a -G microk8s $USER
+sudo chown -f -R $USER ~/.kube
+su - $USER
+microk8s enable dns storage dashboard rbac
+-SETUP ALIAS
+alias kubectl='microk8s kubectl'
+-STOP
+microk8s.stop
+-START
+microk8s.start
+-OPEN INSECURE PORT
+
+--GRANT PERMISSIONS
+-USER
+sudo chown -f -R $USER ~/.kube
+
+--INFO
+-NAMESPACES
+kubectl get all --all-namespaces
+-NODES
+kubectl get nodes
+-SERVICES
+kubectl get services
+-PODS
+kubectl get pods
+-POD METRICS
+kubectl top pod POD_NAME --containers
+-VOLUMES
+kubectl get pv
+-EVENTS
+kubectl get events
+-DEPLOYMENTS history
+kubectl rollout history deployment/DEPLOYMENT_NAME
+-DEPLOYMENT ROLLING UPDATE STATUS
+kubectl rollout status -w deployment/DEPLOYMENT_NAME
+
+--LABEL
+-POD
+kubectl label pods POD_NAME new-label=LABEL_NAME
+
+--ANNOTATE
+-POD
+kubectl annotate pods POD_NAME anotation-key=ANOTATION_VALUE
+
+--AUTOSCALE
+-DEPLOYMENT
+kubectl autoscale deployment DEPLOYMENT_NAME --min=NUMBER_FROM --max=NUMBER_TO
+
+--SCALE
+-REPLICA_SET
+kubectl scale --replicas=NUMBER rs/REPLICA_SET_NAME
+-RESOURCE
+kubectl scale --replicas=3 -f YAML_FILE_NAME.yaml
+-DEPLOYMENT - scale with statement IF 2 REPLICAS scale it to 3
+kubectl scale --current-replicas=2 --replicas=3 deployment/DEPLOYMENT_NAME
+-REPLICATION_CONTROLLERS scale multiple at one time
+kubectl scale --replicas=5 rc/REPLICATION_CONTROLLER_NAME rc/ANOTHER_REPLICATION_CONTROLLER_NAME
+
+--TOKEN
+-GENERATE
+token=$(microk8s kubectl -n kube-system get secret | grep default-token | cut -d " " -f1)
+-GET
+kubectl -n kube-system describe secret $token
+
+--FORWARD
+-SERVICE
+kubectl port-forward -n kube-system service/SERVICE_NAME SERVICE_PORT:PROTOCOL_PORT
+-EXPOSE
+kubectl rc SERVICE_NAME --port=POR_NAME --target-port=TARGET_PORT
+
+--DELETE
+-POD from file
+kubectl delete -f ./FILE_NAME.json
+-POD/SERVICE by name
+kubectl delete pod,service NAME_1 NAME_2
+-POD/SERVICE by label
+kubectl delete pods,services -l name=LABEL_NAME
+-ALL PODS/SERVICES in NAMESPACE
+kubectl -n NAMESPACE delete pod,svc --all
+
+--LOGS
+-POD
+kubectl logs POD_NAME
+-POD BY LABEL
+kubectl logs -l name=LABEL_NAME
+-POD PREVIOUS INSTANCE
+kubectl logs POD_NAME --previous
+-POD STREAM
+kubectl logs -f POD_NAME
+
+--RUN
+-ATTACH running container
+kubectl attach PODNAME -i
+-COMMAND in existing pod
+kubectl exec POD_NAME -- COMMAND
+-COMMAND in multi-container case
+kubectl exec POD_NAME -c CONTAINER_NAME -- COMAND
+-DEPLOYMENT create
+kubectl create deployment DEPLOYMENT_NAME --image=IMAGE_NAME
+-DEPLOYMENT set image
+kubectl set image deployment/DEPLOYMENT_NAME www=IMAGE_NAME:REVISION
+-DEPLOYMENT rollback
+kubectl rollout undo deployment/DEPLOYMENT_NAME
+-DEPLOYMENT rollback to specific revision
+kubectl rollout undo deployment/DEPLOYMENT_NAME --to-revision=REVISION_NUMBER
+-DEPLOYMENT RESTART
+kubectl rollout restart deployment/DEPLOYMENT_NAME
