@@ -1,0 +1,10 @@
+--GIT
+-INSTALL
+sudo apt install git -y
+-SETUP
+git config --global user.name "Žygimantas Bagdzevičius"
+git config --global user.email "zbagdzevicius@gmail.com"
+ssh-keygen
+
+--SNAP
+sudo apt install snapd -y

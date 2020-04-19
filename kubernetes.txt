@@ -1,6 +1,9 @@
 --MICROK8S
 -INSTALL
 sudo snap install microk8s --classic --channel=1.18/stable
+-UNINSTALL
+microk8s.reset
+snap remove microk8s
 -SETUP
 sudo usermod -a -G microk8s $USER
 sudo chown -f -R $USER ~/.kube
@@ -12,7 +15,11 @@ alias kubectl='microk8s kubectl'
 microk8s.stop
 -START
 microk8s.start
--OPEN INSECURE PORT
+-CREATE CREDENTIALS FOR DOCKER IMAGES pulling from private docker registry
+kubectl create secret generic regcred \
+    --from-file=.dockerconfigjson=~/cronicler-kubernetes/gitlab-docker-registry-config.json \
+    --type=kubernetes.io/dockerconfigjson
+
 
 --GRANT PERMISSIONS
 -USER
@@ -39,6 +46,10 @@ kubectl get deployments --all-namespaces
 kubectl rollout history deployment/DEPLOYMENT_NAME
 -DEPLOYMENT ROLLING UPDATE STATUS
 kubectl rollout status -w deployment/DEPLOYMENT_NAME
+-NODE INFORMATION
+kubectl describe node
+-POD INFORMATION
+kubectl describe pod POD_NAME
 
 --LABEL
 -POD
@@ -125,3 +136,29 @@ kubectl apply -f FILENAME.yaml
 --RESTART
 -DEPLOYMENT
 kubectl rollout restart deployments/DEPLOYMENT -n NAMEPSACE
+
+--SETUP INGRESS
+-INITIAL CONFIGURATION
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.26.1/deploy/static/mandatory.yaml
+-LOAD BALANCER
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.26.1/deploy/static/provider/cloud-generic.yaml
+-WAIT FOR INGRESS CONTROLLER PODS TO BE STARTED
+kubectl get pods --all-namespaces -l app.kubernetes.io/name=ingress-nginx
+-CONFIRM EXTERNAL IP FOR LOAD BALANCER
+kubectl get svc --namespace=ingress-nginx
+-LOAD PROJECT INGRESS FILE
+kubectl apply -f PROJECT_INGRESS_FILE.yaml
+-CHECK IF ROUTED CORRECTLY
+curl DOMAIN_IN_INGRESS.COM
+
+--SETUP SSL
+-CREATE NAMESPACE FOR CERTIFICATE MANAGER
+kubectl create namespace cert-manager
+-INSTALL CERTIFICATE MANAGER
+kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v0.12.0/cert-manager.yaml
+-VERIFY THAT CERT MANAGER IS RUNNING
+kubectl get pods --namespace cert-manager
+-CHECK CERTIFICATE
+kubectl describe certificate
+-CHECK IF SSL VERIFIED OKEY
+wget --save-headers -O- DOMAIN.COM

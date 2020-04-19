@@ -5,18 +5,24 @@ docker run --publish RUNNING_PORT:WANTED_PORT --detach --name CONTAINER_NAME PRO
  docker build --tag PROJECT:VERSION .
 
 --INFO
+-IMAGE
 docker image ls
+-CONTAINER
 docker container ls
+-RUNNING CONTAINERS
 docker ps
+-CONTAINER WATCH
 docker logs CONTAINER_NAME --until/--tail/--folow
 
 --DELETE
 -CONTAINER
 docker rm --force CONTAINER_NAME
--image
+-IMAGE
 docker rmi --force PROJECT
 
 --STOP
 docker stop CONTAINER_NAME
 
-
+--SETUP DOCKER REGISTRY
+docker login
+cat ~/.docker/config.json
